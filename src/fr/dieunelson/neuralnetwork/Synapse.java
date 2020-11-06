@@ -1,24 +1,37 @@
 package fr.dieunelson.neuralnetwork;
 
+import java.util.ArrayList;
+
 public class Synapse {
 
 
     private Double content;
     private Boolean noReset;
-    public Object lock;
+    private ArrayList<Neuron> neurons;
 
-    public Synapse(){}
+    public Synapse(){
+        neurons = new ArrayList<>();
+        noReset = false;
+    }
+
+    public void addNeuron(Neuron n){
+        neurons.add(n);
+        n.incrementInput();
+    }
 
 
     public void setContent(Double content) throws Exception {
         this.content = content;
-        lock.notifyAll();
+        for (Neuron n : neurons) {
+            n.activate(content);
+        }
+        if (!noReset){
+            content = 0.0;
+        }
     }
 
     public Double getContent() throws Exception {
-        Double tmp = this.content;
-        if (!this.noReset)this.content = 0.0;
-        return tmp;
+        return content;
     }
 
     private void setNoReset(Boolean value){

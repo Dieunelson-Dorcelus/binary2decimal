@@ -1,27 +1,38 @@
 package fr.dieunelson.neuralnetwork;
 
+import java.util.ArrayList;
+import java.util.EventListener;
+
 public class NeuronOutput extends Neuron{
 
+    private Object lock;
     private Double value;
 
-    public NeuronOutput(SynapseInput input, Task task) {
-        super(input, null, task);
+    public NeuronOutput(String name, Task task) {
+        super(name,task);
     }
 
     @Override
-    public void run() {
-        synchronized (this.getInput().lock){
-            try {
-                this.getInput().lock.wait();
-                Double content = this.getInput().getContent();
-                this.value = this.getTask().run(content);
+    public void activate(Double value) throws Exception {
 
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+        getValues().add(value);
+        if (getValues().size()>= getNbSynapseInput()){
+            this.value = getTask().run(getValues());
+            //  Reset
+            setValues(new ArrayList<>());
+            //  Notify
+            if (lock!=null){
+                lock.notifyAll();
             }
         }
+    }
+
+    public void setLock(Object lock) {
+        this.lock = lock;
+    }
+
+    public Object getLock() {
+        return lock;
     }
 
     public Double getValue() {

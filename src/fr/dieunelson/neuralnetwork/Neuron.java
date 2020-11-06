@@ -1,49 +1,40 @@
 package fr.dieunelson.neuralnetwork;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Neuron extends Thread{
+public class Neuron extends NeuronInput{
 
-    private SynapseInput input;
-    private SynapseOutput output;
-    private Task task;
+
+    private ArrayList<Double> values;
     private HashMap<String,Object> env;
+    private int nbSynapseInput;
 
-    public Neuron(SynapseInput input, SynapseOutput output, Task task){
-        this.input = input;
-        this.output = output;
-        this.task = task;
+    public Neuron(String name, Task task){
+        super(name,task);
+        values = new ArrayList<>();
+        nbSynapseInput = 0;
     }
 
-    public Neuron(Task task){
-        this(new SynapseInput(), new SynapseOutput(), task);
+    public void incrementInput(){
+        nbSynapseInput++;
     }
 
     @Override
-    public void run() {
-        synchronized (this.input.lock){
-            try {
-                this.input.lock.wait();
-                Double content = this.input.getContent();
-                Double value = this.task.run(content);
-                this.output.setContent(value);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    public void activate(Double value) throws Exception {
+        values.add(value);
+        if (values.size()>=nbSynapseInput)getSynapse().setContent(getTask().run(values));
     }
 
-    public SynapseInput getInput() {
-        return input;
+    public ArrayList<Double> getValues() {
+        return values;
     }
 
-    public SynapseOutput getOutput() {
-        return output;
+    public void setValues(ArrayList<Double> values) {
+        this.values = values;
     }
 
-    public Task getTask() {
-        return task;
+    public int getNbSynapseInput() {
+        return nbSynapseInput;
     }
 }
